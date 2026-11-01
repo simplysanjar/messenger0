@@ -2,13 +2,13 @@ importScripts("https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js
 importScripts("https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js")
 
 firebase.initializeApp({
-    apiKey: "AIzaSyAjdcn4j-d8DjF62rNfpD3yLqma5rGcRYg",
-    authDomain: "messenger0-1b3e9.firebaseapp.com",
-    projectId: "messenger0-1b3e9",
-    storageBucket: "messenger0-1b3e9.firebasestorage.app",
-    messagingSenderId: "613278078220",
-    appId: "1:613278078220:web:c20cf100955bf164eca529",
-    measurementId: "G-KSDDYNFJDF"
+    apiKey: "AIzaSyDoGGjSBgXD9UTnhQIWLHiw45pwb_RuQbk",
+    authDomain: "messenger0-827bd.firebaseapp.com",
+    projectId: "messenger0-827bd",
+    storageBucket: "messenger0-827bd.firebasestorage.app",
+    messagingSenderId: "942492422956",
+    appId: "1:942492422956:web:329a05c3ee29f3b2761289",
+    measurementId: "G-B7QF6X3V1T"
 })
 
 const messaging = firebase.messaging()
