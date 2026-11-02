@@ -118,7 +118,7 @@ function App() {
           element={
             user
               ? <Privacy />
-              : <Navigate to="/register" replace />
+              : <Navigate to="/privacy" replace />
           }
         />
 
