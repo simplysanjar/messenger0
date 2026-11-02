@@ -114,13 +114,10 @@ function App() {
           }
         />
 
-        <Route
-          path="/privacy"
+        <Route path="/privacy"
           element={
-            user
-              ? <Privacy />
-              : <Navigate to="/privacy" replace />
-          }
+            <Privacy />
+          } 
         />
 
         <Route
