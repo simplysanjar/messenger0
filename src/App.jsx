@@ -114,6 +114,15 @@ function App() {
         />
 
         <Route
+          path="/privacy"
+          element={
+            user
+              ? <Privacy />
+              : <Navigate to="/register" replace />
+          }
+        />
+
+        <Route
           path="/messages/:email_name"
           element={
             user
