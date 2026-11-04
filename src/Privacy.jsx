@@ -1,223 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLanguage, SUPPORTED_LANGUAGES } from "./i18n";
+import { getPolicy } from "./privacyContent";
 import "./Privacy.css";
 
 /* ── Ин қиматҳоро пеш аз нашр дуруст кунед ── */
 const APP_NAME = "Messenger0";
-const CONTACT_EMAIL = "simply@sanjar.com"; // email-и худро гузоред
-const EFFECTIVE_DATE = "2 ноябри 2026";
+const CONTACT_EMAIL = "simply@sanjar.com";
 const MIN_AGE = 13; // ҳадди ақали синну сол
-const RETENTION_DAYS = 0; // мӯҳлати тоза кардани маълумот пас аз ҳазфи аккаунт
+const RETENTION_DAYS = 0; // 0 = фавран пас аз ҳазфи аккаунт
 
-const GLANCE = [
-  {
-    title: "Паёмҳо рамзгузорӣ шудаанд",
-    text: "Мундариҷаи паём дар дастгоҳи фиристанда рамзгузорӣ мешавад ва танҳо дар дастгоҳи гиранда кушода мешавад.",
-  },
-  {
-    title: "Калидҳо дар дастгоҳи шумо",
-    text: "Калидҳои рамзгузорӣ танҳо дар дастгоҳи шумо нигоҳ дошта мешаванд. Ҳатто администраторон ба онҳо дастрасӣ надоранд.",
-  },
-  {
-    title: "Воридшавӣ тавассути Google",
-    text: "Мо пароли шуморо намебинем ва нигоҳ намедорем. Шиносоӣ тавассути Google анҷом меёбад.",
-  },
-];
-
-const SECTIONS = [
-  {
-    id: "intro",
-    title: "Муқаддима",
-    blocks: [
-      {
-        type: "p",
-        text: `${APP_NAME} платформаи муосири паёмрасонӣ бо системаи амниятии E2EE (рамзгузории байнихамдигарӣ) мебошад. Ин Сиёсати махфият шарҳ медиҳад, ки мо кадом маълумотро ҷамъ меорем, онро чӣ гуна истифода мебарем ва шумо онро чӣ тавр назорат карда метавонед.`,
-      },
-      {
-        type: "p",
-        text: "Бо сабти ном ва истифодаи хизматрасонӣ шумо бо ин сиёсат розӣ мешавед. Агар розӣ набошед, лутфан аз хизматрасонӣ истифода набаред.",
-      },
-    ],
-  },
-  {
-    id: "data",
-    title: "Кадом маълумотро мо ҷамъ меорем",
-    blocks: [
-      {
-        type: "p",
-        text: "Мо танҳо маълумоти барои кори хизматрасонӣ заруриро ҷамъ меорем:",
-      },
-      {
-        type: "ul",
-        items: [
-          "Маълумот аз Google: ном, суроғаи email, акси профил ва нишонгари ягонаи аккаунти Google-и шумо.",
-          "Маълумоти профил: ҳар чизе, ки шумо худатон дар профили худ ворид мекунед.",
-          "Метамаълумоти хизматрасонӣ: барои расонидани паём сервер бояд донад, ки паём ба кӣ равона шудааст ва кай фиристода шудааст.",
-          "Маълумоти техникӣ: навъи дастгоҳ ва браузер, суроғаи IP, вақти воридшавӣ ва сабтҳои хатогӣ, ки барои амният ва кори устувор лозиманд.",
-          "Паёмҳо ва файлҳо дар шакли рамзгузоришуда: сервер танҳо матнҳои рамзшударо мегузаронад ва нигоҳ медорад, ки онро хонда наметавонад.",
-        ],
-      },
-    ],
-  },
-  {
-    id: "e2ee",
-    title: "Рамзгузории E2EE чӣ тавр кор мекунад",
-    blocks: [
-      {
-        type: "p",
-        text: "Паёмҳои шумо бо рамзгузории End-to-End муҳофизат карда мешаванд. Ин чунин маъно дорад:",
-      },
-      {
-        type: "ul",
-        items: [
-          "Паём дар дастгоҳи шумо рамзгузорӣ мешавад ва танҳо дар дастгоҳи гиранда кушода мешавад.",
-          "Ҳеҷ кас, аз ҷумла роҳбарият ва администраторони хизматрасонӣ, паёмҳои шуморо хонда наметавонад.",
-          "Калидҳои рамзгузорӣ танҳо дар дастгоҳи шумо нигоҳ дошта мешаванд ва ба сервер фиристода намешаванд.",
-          "Чатҳо ва файлҳо ҳамон як сатҳи баланди амниятро доранд.",
-        ],
-      },
-      {
-        type: "note",
-        title: "Ҳудуди муҳофизат",
-        text: "Рамзгузорӣ паёмҳоро ҳангоми интиқол ва нигоҳдорӣ дар сервер муҳофизат мекунад. Он наметавонад аз скриншот, нусхабардорӣ аз ҷониби гиранда ё барномаи зарарнок дар дастгоҳи худи шумо муҳофизат кунад. Азбаски калидҳо танҳо дар дастгоҳи шумо ҳастанд, агар дастгоҳро гум кунед ё маълумоти онро тоза намоед, мо наметавонем калидҳо ва таърихи паёмҳоро барқарор кунем.",
-      },
-    ],
-  },
-  {
-    id: "google",
-    title: "Сабти ном тавассути Google",
-    blocks: [
-      {
-        type: "p",
-        text: "Сабти ном ва воридшавӣ тавассути Google Authentication анҷом меёбад. Мо аз Google танҳо маълумоти асосии профилро (ном, email, акс) мегирем. Мо ба паёмҳои Google, ба Drive ва ба дигар хизматрасониҳои аккаунти шумо дастрасӣ надорем.",
-      },
-      {
-        type: "p",
-        text: "Иҷозатеро, ки ба Messenger0 додаед, шумо метавонед дар ягон вақт дар танзимоти аккаунти Google-и худ бекор кунед. Google маълумоти шуморо тибқи сиёсати махфияти худ коркард мекунад.",
-      },
-    ],
-  },
-  {
-    id: "use",
-    title: "Мо маълумотро чӣ тавр истифода мебарем",
-    blocks: [
-      {
-        type: "ul",
-        items: [
-          "Барои сохтани аккаунт, шиносоии шумо ва расонидани паёмҳо.",
-          "Барои муҳофизат аз дуздии аккаунт, сӯиистифода ва ҳамлаҳо.",
-          "Барои ислоҳи хатогиҳо ва беҳтар кардани суръат ва устувории хизматрасонӣ.",
-          "Барои иҷрои талаботи қонун.",
-        ],
-      },
-      {
-        type: "p",
-        text: "Мо маълумоти шуморо намефурӯшем ва барои реклама истифода намебарем.",
-      },
-    ],
-  },
-  {
-    id: "security",
-    title: "Муҳофизати аккаунт ва маълумот",
-    blocks: [
-      {
-        type: "ul",
-        items: [
-          "Муҳофизат аз дуздии аккаунт тавассути шиносоии Google ва назорати сессияҳо.",
-          "Муҳофизати пурраи маълумоти шахсӣ ҳангоми интиқол тавассути пайвасти рамзгузоришуда (HTTPS/WSS).",
-          "Дастрасӣ ба сервер ва пойгоҳи маълумот танҳо барои шахсони ваколатдор ва танҳо дар ҳаҷми зарурӣ.",
-        ],
-      },
-      {
-        type: "p",
-        text: "Бо вуҷуди ин, ягон низоми интернетӣ ба таври мутлақ бехатар нест. Барои амнияти худ дастгоҳро бо қулф ва аккаунти Google-ро бо тасдиқи дукарата муҳофизат кунед.",
-      },
-    ],
-  },
-  {
-    id: "sharing",
-    title: "Мубодилаи маълумот бо тарафҳои сеюм",
-    blocks: [
-      {
-        type: "p",
-        text: "Мо маълумоти шуморо танҳо бо тарафҳое мубодила мекунем, ки барои кори хизматрасонӣ лозиманд:",
-      },
-      {
-        type: "ul",
-        items: [
-          "Google: барои шиносоӣ ва воридшавӣ.",
-          "Провайдери хостинг ва инфрасохтор: барои кори серверҳо.",
-          "Мақомоти ваколатдор: танҳо бо дархости қонунӣ.",
-        ],
-      },
-      {
-        type: "p",
-        text: "Ҳатто бо дархости қонунӣ мо мундариҷаи паёмҳоро дода наметавонем, зеро онро намехонем. Мо танҳо маълумотеро дода метавонем, ки воқеан дорем: маълумоти профил, метамаълумот ва матни рамзгузоришуда.",
-      },
-    ],
-  },
-  {
-    id: "retention",
-    title: "Нигоҳдорӣ ва ҳазфи маълумот",
-    blocks: [
-      {
-        type: "p",
-        text: `Мо маълумотро то он даме нигоҳ медорем, ки аккаунти шумо фаъол аст. Пас аз ҳазфи аккаунт, маълумоти профил ва паёмҳои рамзгузоришуда дар давоми ${RETENTION_DAYS} рӯз аз серверҳо тоза карда мешаванд, ба истиснои маълумоте, ки қонун нигоҳ доштани онро талаб мекунад.`,
-      },
-    ],
-  },
-  {
-    id: "rights",
-    title: "Ҳуқуқҳои шумо",
-    blocks: [
-      {
-        type: "ul",
-        items: [
-          "Дастрасӣ: бидонед, ки мо дар бораи шумо кадом маълумотро нигоҳ медорем.",
-          "Ислоҳ: маълумоти нодурусти профили худро тағйир диҳед.",
-          "Ҳазф: аккаунт ва маълумоти худро ҳазф кунед ё ҳазфи онро дархост намоед.",
-          "Бозхонд: иҷозати додашударо ба Google дар ҳар вақт бекор кунед.",
-        ],
-      },
-      {
-        type: "p",
-        text: `Барои татбиқи ин ҳуқуқҳо ба ${CONTACT_EMAIL} нависед.`,
-      },
-    ],
-  },
-  {
-    id: "children",
-    title: "Синну сол",
-    blocks: [
-      {
-        type: "p",
-        text: `${APP_NAME} барои шахсони аз ${MIN_AGE}-сола хурд пешбинӣ нашудааст. Агар бифаҳмем, ки аккаунт ба шахси аз ин синну сол хурдтар тааллуқ дорад, онро ҳазф мекунем.`,
-      },
-    ],
-  },
-  {
-    id: "changes",
-    title: "Тағйирот дар ин сиёсат",
-    blocks: [
-      {
-        type: "p",
-        text: "Мо метавонем ин сиёсатро навсозӣ кунем. Дар ҳолати тағйироти назаррас, шуморо дар худи хизматрасонӣ огоҳ мекунем. Санаи қувваи охирин дар болои ин саҳифа нишон дода шудааст.",
-      },
-    ],
-  },
-  {
-    id: "contact",
-    title: "Тамос",
-    blocks: [
-      {
-        type: "p",
-        text: "Агар дар бораи махфият савол дошта бошед, бо мо тамос гиред:",
-      },
-      { type: "contact" },
-    ],
-  },
-];
-
-function Block({ block }) {
+function Block({ block, email }) {
   switch (block.type) {
     case "p":
       return <p>{block.text}</p>;
@@ -239,8 +31,8 @@ function Block({ block }) {
     case "contact":
       return (
         <p>
-          <a className="pp-mail" href={`mailto:${CONTACT_EMAIL}`}>
-            {CONTACT_EMAIL}
+          <a className="pp-mail" href={`mailto:${email}`}>
+            {email}
           </a>
         </p>
       );
@@ -250,8 +42,31 @@ function Block({ block }) {
 }
 
 export default function Privacy() {
-  const [active, setActive] = useState(SECTIONS[0].id);
+  const { language, changeLang } = useLanguage();
 
+  const policy = useMemo(
+    () =>
+      getPolicy(language, {
+        app: APP_NAME,
+        email: CONTACT_EMAIL,
+        age: MIN_AGE,
+        days: RETENTION_DAYS,
+      }),
+    [language]
+  );
+
+  const { ui, glance, sections } = policy;
+  const dir = SUPPORTED_LANGUAGES[language]?.dir || "ltr";
+  const numLocale = language === "fa" ? "fa-IR" : "en";
+
+  const [active, setActive] = useState(sections[0].id);
+
+  // Сарлавҳаи ҳуҷҷат мувофиқи забон
+  useEffect(() => {
+    document.title = `${ui.title} — ${APP_NAME}`;
+  }, [ui.title]);
+
+  // Scroll-spy: бахши фаъол дар мундариҷа
   useEffect(() => {
     if (!("IntersectionObserver" in window)) return;
     const observer = new IntersectionObserver(
@@ -263,25 +78,43 @@ export default function Privacy() {
       },
       { rootMargin: "-15% 0px -70% 0px" }
     );
-    SECTIONS.forEach(({ id }) => {
+    sections.forEach(({ id }) => {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
     });
     return () => observer.disconnect();
-  }, []);
+  }, [sections]);
 
   return (
-    <div className="pp">
+    <div className="pp" dir={dir} lang={language}>
       <header className="pp-header">
-        <p className="pp-brand">{APP_NAME}</p>
-        <h1>Сиёсати махфият</h1>
-        <p className="pp-date">Аз санаи {EFFECTIVE_DATE} эътибор дорад</p>
+        <div className="pp-topbar">
+          <p className="pp-brand">{APP_NAME}</p>
+
+          <div className="pp-lang" role="group" aria-label={ui.language}>
+            {Object.values(SUPPORTED_LANGUAGES).map((l) => (
+              <button
+                key={l.code}
+                type="button"
+                className={language === l.code ? "is-active" : undefined}
+                aria-pressed={language === l.code}
+                lang={l.code}
+                onClick={() => changeLang(l.code)}
+              >
+                {l.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <h1>{ui.title}</h1>
+        <p className="pp-date">{ui.effective}</p>
       </header>
 
-      <section className="pp-glance" aria-label="Дар як нигоҳ">
-        <h2>Дар як нигоҳ</h2>
+      <section className="pp-glance" aria-label={ui.glanceTitle}>
+        <h2>{ui.glanceTitle}</h2>
         <div className="pp-glance-grid">
-          {GLANCE.map((g) => (
+          {glance.map((g) => (
             <div key={g.title} className="pp-glance-item">
               <h3>{g.title}</h3>
               <p>{g.text}</p>
@@ -291,10 +124,10 @@ export default function Privacy() {
       </section>
 
       <div className="pp-layout">
-        <nav className="pp-toc" aria-label="Мундариҷа">
-          <p className="pp-toc-title">Мундариҷа</p>
+        <nav className="pp-toc" aria-label={ui.toc}>
+          <p className="pp-toc-title">{ui.toc}</p>
           <ol>
-            {SECTIONS.map((s) => (
+            {sections.map((s) => (
               <li key={s.id}>
                 <a
                   href={`#${s.id}`}
@@ -309,13 +142,16 @@ export default function Privacy() {
         </nav>
 
         <main className="pp-content">
-          {SECTIONS.map((s, i) => (
+          {sections.map((s, i) => (
             <section key={s.id} id={s.id} className="pp-section">
               <h2>
-                <span className="pp-num">{i + 1}.</span> {s.title}
+                <span className="pp-num">
+                  {(i + 1).toLocaleString(numLocale)}.
+                </span>{" "}
+                {s.title}
               </h2>
               {s.blocks.map((b, j) => (
-                <Block key={j} block={b} />
+                <Block key={j} block={b} email={CONTACT_EMAIL} />
               ))}
             </section>
           ))}
@@ -323,7 +159,8 @@ export default function Privacy() {
       </div>
 
       <footer className="pp-footer">
-        © {new Date().getFullYear()} {APP_NAME}
+        © {new Date().getFullYear().toLocaleString(numLocale, { useGrouping: false })}{" "}
+        {APP_NAME}
       </footer>
     </div>
   );
