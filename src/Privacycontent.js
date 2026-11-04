@@ -1,4 +1,4 @@
-// PrivacyContent.js
+// Privacycontent.js
 // Матни Сиёсати махфият ба 4 забон: tg, ru, en, fa.
 // v = { app, email, age, days } — қиматҳое, ки аз Privacy.jsx дода мешаванд.
 
