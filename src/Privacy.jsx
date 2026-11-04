@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLanguage, SUPPORTED_LANGUAGES } from "./i18n";
-import { getPolicy } from "./privacyContent";
+import { getPolicy } from "./PrivacyContent";
 import "./Privacy.css";
 
 /* ── Ин қиматҳоро пеш аз нашр дуруст кунед ── */
